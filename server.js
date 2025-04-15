@@ -7,6 +7,8 @@ const path = require("path");
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from /public
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/login", async (req, res) => {
@@ -54,6 +56,11 @@ app.post("/api/login", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// Fallback route to serve index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
