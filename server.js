@@ -1,30 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const { HttpsProxyAgent } = require("https-proxy-agent");
 const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from /public
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/login", async (req, res) => {
-  const { username, password, proxy } = req.body;
-  const agent = new HttpsProxyAgent("http://" + proxy);
+  const { username, password } = req.body;
   const loginUrl = "https://auth.roblox.com/v2/login";
 
   try {
-    // Step 1: Get X-CSRF-TOKEN
+    // Step 1: Get CSRF token
     const firstAttempt = await axios.post(loginUrl, {}, {
-      httpsAgent: agent,
       validateStatus: () => true
     });
     const csrfToken = firstAttempt.headers["x-csrf-token"];
 
-    // Step 2: Actual login request
+    // Step 2: Perform login
     const loginResp = await axios.post(loginUrl, {
       ctype: "Username",
       cvalue: username,
@@ -34,7 +29,6 @@ app.post("/api/login", async (req, res) => {
         "Content-Type": "application/json",
         "X-CSRF-TOKEN": csrfToken
       },
-      httpsAgent: agent,
       withCredentials: true,
       maxRedirects: 0,
       validateStatus: () => true
@@ -43,22 +37,16 @@ app.post("/api/login", async (req, res) => {
     const robloCookie = loginResp.headers["set-cookie"]?.find(c => c.includes(".ROBLOSECURITY"));
 
     if (robloCookie) {
-      res.json({
-        success: true,
-        cookie: robloCookie
-      });
+      res.json({ success: true, cookie: robloCookie });
     } else {
-      res.json({
-        success: false,
-        error: loginResp.data.errors || "Login failed. Check credentials or proxy."
-      });
+      res.json({ success: false, error: loginResp.data.errors || "Login failed. Check your credentials." });
     }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Fallback route to serve index.html
+// Fallback to index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
