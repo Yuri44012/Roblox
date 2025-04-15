@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Roblox Proxy Login</title>
 </head>
 <body>
@@ -24,6 +26,7 @@
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
 
+      // Call API to attempt login through proxy
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,8 +36,9 @@
       const data = await res.json();
       const resultDiv = document.getElementById("result");
 
+      // Handle the API response
       if (data.success) {
-        navigator.clipboard.writeText(data.cookie);
+        navigator.clipboard.writeText(data.cookie);  // Auto-copy the cookie
         resultDiv.innerHTML = `
           <h3>Login Successful!</h3>
           <p><strong>.ROBLOSECURITY cookie:</strong> (Auto copied)</p>
