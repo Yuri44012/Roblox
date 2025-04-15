@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Roblox Proxy Login</title>
+</head>
+<body>
+  <h2>Login with Proxy</h2>
+  <form id="loginForm">
+    <label>Proxy (IP:PORT):</label><br>
+    <input type="text" id="proxy" required><br><br>
+    <label>Username:</label><br>
+    <input type="text" id="username" required><br><br>
+    <label>Password:</label><br>
+    <input type="password" id="password" required><br><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <div id="result" style="margin-top:20px;"></div>
+
+  <script>
+    document.getElementById("loginForm").onsubmit = async function (e) {
+      e.preventDefault();
+      const proxy = document.getElementById("proxy").value;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proxy, username, password }),
+      });
+
+      const data = await res.json();
+      const resultDiv = document.getElementById("result");
+
+      if (data.success) {
+        navigator.clipboard.writeText(data.cookie);
+        resultDiv.innerHTML = `
+          <h3>Login Successful!</h3>
+          <p><strong>.ROBLOSECURITY cookie:</strong> (Auto copied)</p>
+          <code>${data.cookie}</code>
+          <br><br>
+          <a href="https://www.roblox.com" target="_blank">Open Roblox.com</a><br><br>
+          <p>Use a browser extension like <a href="https://chrome.google.com/webstore/detail/cookie-editor/\
+fhcgjolkccmbidfldomjliifgaodjagh" target="_blank">Cookie Editor</a> to paste the cookie and be logged in.</p>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color:red;">Login failed: ${JSON.stringify(data.error)}</p>`;
+      }
+    };
+  </script>
+</body>
+</html>
